@@ -1,6 +1,6 @@
 FROM imsky/haxe
 MAINTAINER emmanuel.botros@gmail.com
-WORKDIR /app
+WORKDIR /application
 
 # prerequistes
 RUN apt-get update && apt-get install -y git python-pip gyp npm nodejs
@@ -26,7 +26,7 @@ RUN npm install --unsafe-perm -g mssql
 #RUN npm install --unsafe-perm -g appmetrics-elk
 
 RUN rm -rf *
-RUN git clone https://github.com/mebyz/pistahx-app .
+RUN git clone https://github.com/mebyz/pistahx-app . && git fetch && git checkout 9e05f94
 
 # app dependencies
 RUN npm install --unsafe-perm --only=dev
@@ -34,7 +34,7 @@ RUN npm install --unsafe-perm --only=dev
 # haxe libs
 RUN echo "y" | haxelib install ./node_modules/pistahx/gen/libs.hxml
 
-RUN npm install sqlite3
+RUN npm install sqlite3 tedious
 
 RUN gulp build
 
@@ -42,4 +42,10 @@ RUN gulp pack
 
 RUN cp -rf node_modules/* distrib/out/node_modules/
 
-CMD ["ls", "/app/distrib/out"]
+RUN cp -rf distrib/out/* /application/
+
+ENV ENV localdocker
+
+EXPOSE  3000
+
+CMD ["node", "/application/app.js"]
